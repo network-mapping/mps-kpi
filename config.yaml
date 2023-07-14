@@ -1,0 +1,79 @@
+# this is yaml format (https://yaml.org/spec/1.2.2/)
+# which is space delimited, not tab, spaces must correct
+# quick start guide here: https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html
+
+# this must contain an entry for the month found in the reports  it does not need historical info
+exchange_rates:
+  - year: 2023
+    month: 'June'
+    AUD: 0.52  # conversion to GPB
+    CAD: 0.58  # conversion to GPB
+    USD: 0.76  # conversion to GPB
+    GBP: 1.00  # conversion to GPB
+  - year: 2023
+    month: 'July'
+    AUD: 0.52  # conversion to GPB
+    CAD: 0.58  # conversion to GPB
+    USD: 0.76  # conversion to GPB
+    GBP: 1.00  # conversion to GPB
+     
+# this should not need to change
+companies:
+  NMAP: 
+    name: 'Network Mapping Pty Ltd'
+    currency: 'AUD'
+  NMCP:
+    name: 'Network Mapping Corp'
+    currency: 'CAD'
+  NMIP:
+    name: 'Network Mapping Inc'
+    currency: 'USD'
+  NMLP:
+    name: 'Network Mapping Limited'
+    currency: 'GBP'
+    
+# mps to finance cost mappings
+cost_mapping:
+  'Travel and Subsistence':
+    - 'accomodation'
+    - 'accommodation'
+    - 'airfares'
+    - 'air fares'
+    - 'car hire'
+    - 'subsistence'
+    - 'subsistance'
+    - 'telephone'
+    - 'travel'
+  'Aviation':
+     - 'aviation'
+  'Shipping': 
+    - 'shipping'
+  'IS':
+    - 'project is'
+  'Other':
+    - 'professional services'
+    - 'equipment'
+    - 'staff entertainment'
+    - 'bank charges'
+    - 'state tax deductions'
+  'Subcontractors':
+    - 'sub-contractors'
+  'Salaries - Ops':
+    - 'salaries - field ops'
+  'Salaries - Production':
+    - 'salaries - production'
+  'Salaries - Project Management':
+     - 'salaries - project management'
+  'Liquidated damages':
+     - 'liquidated damages'
+  'Cost of Goods Sold':
+    - 'total cost of sales'
+    - 'total cost of goods sold'
+  'Internal Trade':  # ignored
+    - 'data processing'
+    - 'data processing (internal)'
+    - 'salaries internal trade'
+    - 'sales - intercompany trading'
+  'Income':
+    - 'services'
+  
