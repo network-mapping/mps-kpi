@@ -1,8 +1,8 @@
 # this is yaml format (https://yaml.org/spec/1.2.2/)
-# which is space delimited, not tab, spaces must correct
+# yaml space delimited, not tab, spaces must correct
 # quick start guide here: https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html
 
-# this must contain an entry for the month found in the reports  it does not need historical info
+# this must contain an entry for the month found in the reports it does not need historical info
 exchange_rates:
   - year: 2023
     month: 'June'
@@ -16,10 +16,56 @@ exchange_rates:
     CAD: 0.58  # conversion to GPB
     USD: 0.76  # conversion to GPB
     GBP: 1.00  # conversion to GPB
-     
+    
+# mps to finance cost mappings
+mps_category_mapping:
+  'Travel and Subsistence':                 # MPS category
+    - 'accomodation'                        # Finance categories
+    - 'accommodation'
+    - 'airfares'
+    - 'air fares'
+    - 'car hire'
+    - 'subsistence'
+    - 'subsistance'
+    - 'telephone'
+    - 'travel'
+  'Aviation':                               # MPS category
+     - 'aviation'                           # Finance categories
+  'Shipping':                               # MPS category
+    - 'shipping'                            # Finance categories
+  'IS':                                     # MPS category
+    - 'project is'                          # Finance categories
+  'Other':                                  # MPS category
+    - 'professional services'               # Finance categories
+    - 'equipment'
+    - 'staff entertainment'
+    - 'bank charges'
+    - 'state tax deductions'
+  'Subcontractors':                         # MPS category
+    - 'sub-contractors'                     # Finance categories
+  'Salaries - Ops':                         # MPS category
+    - 'salaries - field ops'                # Finance categories
+  'Salaries - Production':                  # MPS category
+    - 'salaries - production'               # Finance categories
+  'Salaries - Project Management':          # MPS category
+     - 'salaries - project management'      # Finance categories
+  'Liquidated damages':                     # MPS category
+     - 'liquidated damages'                 # Finance categories
+  'Cost of Goods Sold':                     # MPS category
+    - 'total cost of sales'                 # Finance categories
+    - 'total cost of goods sold'
+  'Internal Trade':                         # these categories are ignored
+    - 'data processing'                     # Finance categories
+    - 'data processing (internal)'
+    - 'salaries internal trade'
+    - 'sales - intercompany trading'
+  'Income':                                 # MPS category
+    - 'services'                            # Finance categories
+
+
 # this should not need to change
 companies:
-  NMAP: 
+  NMAP:
     name: 'Network Mapping Pty Ltd'
     currency: 'AUD'
   NMCP:
@@ -31,49 +77,3 @@ companies:
   NMLP:
     name: 'Network Mapping Limited'
     currency: 'GBP'
-    
-# mps to finance cost mappings
-cost_mapping:
-  'Travel and Subsistence':
-    - 'accomodation'
-    - 'accommodation'
-    - 'airfares'
-    - 'air fares'
-    - 'car hire'
-    - 'subsistence'
-    - 'subsistance'
-    - 'telephone'
-    - 'travel'
-  'Aviation':
-     - 'aviation'
-  'Shipping': 
-    - 'shipping'
-  'IS':
-    - 'project is'
-  'Other':
-    - 'professional services'
-    - 'equipment'
-    - 'staff entertainment'
-    - 'bank charges'
-    - 'state tax deductions'
-  'Subcontractors':
-    - 'sub-contractors'
-  'Salaries - Ops':
-    - 'salaries - field ops'
-  'Salaries - Production':
-    - 'salaries - production'
-  'Salaries - Project Management':
-     - 'salaries - project management'
-  'Liquidated damages':
-     - 'liquidated damages'
-  'Cost of Goods Sold':
-    - 'total cost of sales'
-    - 'total cost of goods sold'
-  'Internal Trade':  # ignored
-    - 'data processing'
-    - 'data processing (internal)'
-    - 'salaries internal trade'
-    - 'sales - intercompany trading'
-  'Income':
-    - 'services'
-  
