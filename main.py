@@ -1,5 +1,7 @@
+import os
 import argparse
 import yaml
+from glob import glob
 from mps_report_builder import mps_reporter
 from mps_report_builder import default_project_code_template
 from mps_report_builder import default_excel_header_row
@@ -27,6 +29,11 @@ if __name__ == '__main__':
     mps_report_builder = mps_reporter(
         config, clargs.excel_header_row, clargs.project_code_template
     )
-    df = mps_report_builder.get_mps_report(clargs.input_path, clargs.output_path)
+    report_paths = glob(os.path.join(clargs.input_path, '*.xlsx'))
+    if not any(report_paths):
+        print(f'No finance reports found in "{clargs.input_path}".')
+    else:
+        fname = mps_report_builder.get_mps_report(report_paths, clargs.output_path)
+        print(f'Written "{fname}".')
 
-    print(df)
+    print(f'Done.')

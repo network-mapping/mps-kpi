@@ -3,12 +3,26 @@ import re
 import calendar
 import numpy as np
 import pandas as pd
-from glob import glob
 from datetime import datetime
+from enum import Enum
 
 default_project_code_template = r'(^NM[ACIL]P[0-9]+)'
 default_excel_header_row = 5
 PROFIT_AND_LOSS_TITLE = 'profit and loss'
+
+
+class ColumnNamesEnum(Enum):
+    project_name = 'Project Name'
+    project_code = 'Project Code'
+    currency = 'Currency'
+    date = 'Date'
+
+
+class FinanceCategoriesEnum(Enum):
+    income = 'income'
+    total_income = 'total income'
+    project = 'projects'
+    total_project = 'total projects'
 
 
 def validate_config(config):
@@ -18,19 +32,13 @@ def validate_config(config):
         if config['companies'] is None:
             raise ValueError(f'No companies are defined in config')
         for k, v in config['companies'].items():
-            if 'name' not in v.keys():
-                raise ValueError(f'Company missing name: "{k}"')
+            if 'code' not in v.keys():
+                raise ValueError(f'Company missing code: "{k}"')
             if 'currency' not in v.keys():
                 raise ValueError(f'Company missing currency: "{k}"')
 
     if 'exchange_rates' not in config.keys():
         raise ValueError('No exchange_rates defined in config')
-    else:
-        for v in config['exchange_rates']:
-            if 'year' not in v.keys():
-                raise ValueError(f'Year missing from exchange_rates item: "{v}"')
-            if 'month' not in v.keys():
-                raise ValueError(f'Month missing from exchange_rates item: "{v}"')
 
     if 'mps_category_mapping' not in config.keys():
         raise ValueError('No mps_category_mapping definied in config')
@@ -58,132 +66,146 @@ class MPSReporter(object):
         self.companies = config['companies']
         self.exchange_rates = config['exchange_rates']
         self.mps_mappings = config['mps_category_mapping']
+        self.finance_mappings = self.map_finance_to_mps()
         self.excel_header_row = excel_header_row
         self.project_pattern = re.compile(project_regex)
 
+    def map_finance_to_mps(self):
+
+        finance_mappings = {}
+        for mps, finance_codes in self.mps_mappings.items():
+            finance_mappings.update({
+                code: mps for code in finance_codes
+            })
+
+        return finance_mappings
+
     def get_currency(self, company_name):
 
-        for k, v in self.companies.items():
-            if v['name'].lower() == company_name.lower():
-                return v['currency']
+        if company_name not in self.companies.keys():
+            raise ValueError(f'Could not find "{company_name}" in config')
+        else:
+            return self.companies[company_name]['currency']
 
-        raise ValueError(f'Could not find "{company_name}" in config')
+    def get_conversion_rate(self, currency, year, month):
 
-    def get_conversion_rate(self, company_name, year, month):
-
-        for v in self.exchange_rates:
-            if str(v['year']) == year:
-                if str(v['month']).lower() == month:
-                    currency = self.get_currency(company_name)
-                    if currency not in v.keys():
+        if currency not in self.exchange_rates.keys():
+            raise ValueError(f'Could not find "{currency}" in exchange_rates config')
+        else:
+            if year not in self.exchange_rates[currency].keys():
+                raise ValueError(f'Could not find "{year}" in exchange_rates config for {currency}')
+            else:
+                if month not in self.exchange_rates[currency][year].keys():
+                    raise ValueError(
+                        f'Could not find "{month}" in exchange_rates config for {currency} in {year}')
+                else:
+                    try:
+                        rate = float(self.exchange_rates[currency][year][month])
+                    except ValueError:
                         raise ValueError(
-                            f'"{currency}" not found in exchange_rates item: "{v}"')
-                    rate = v[currency]
+                            f'Invalid exchange rate found in config for {currency} in {month} {year}')
 
-                    return rate, currency
+                    return rate
 
-        raise ValueError(f'Could not find conversion rate for "{month} {year} {company_name}" in config')
+    def get_mps_category(self, finance_category):
 
-    def get_mps_category(self, cost):
+        if finance_category not in self.finance_mappings.keys():
+            raise ValueError(
+                f'Found unmapped project cost: "{finance_category}". Add this mapping to the config.'
+            )
+        else:
+            return self.finance_mappings[finance_category]
 
-        for category, v in self.mps_mappings.items():
-            if cost.lower() in [x.lower() for x in v]:
-                return category
-
-        raise ValueError(f'Found unmapped cost project cost: "{cost}". Add this mapping to the config.')
-
-    def is_p_and_l_report(self, path):
+    @staticmethod
+    def is_p_and_l_report(path):
         # get the company name, report type and date - ignore if not a p&l
         df = pd.read_excel(path, header=None)
         report = str(df.iloc[1, 0]).lower()
 
         return report == PROFIT_AND_LOSS_TITLE
 
+    # check all the project cost columns are mapped
     def get_mps_project_categories(self, df):
-        # check all the project cost columns are mapped
-        try:
-            start_project_costs = np.nonzero(df.columns == 'projects')[0][0] + 1
-        except IndexError:
-            raise ValueError(f'Could not find "projects" in costs categories')
-        try:
-            end_project_costs = np.nonzero(df.columns == 'total projects')[0][0]
-        except IndexError:
-            raise ValueError(f'Could not find "total projects" in costs categories')
-        categories = [
-            [cost, self.get_mps_category(cost)]
-            for cost in df.columns[start_project_costs:end_project_costs]
-        ]
 
-        return pd.DataFrame(categories, columns=['finance', 'mps'])
+        return self.get_category_range(
+            df,
+            from_category=FinanceCategoriesEnum.project.value,
+            to_category=FinanceCategoriesEnum.total_project.value
+        )
 
-
+    # check all the project cost columns are mapped
     def get_mps_income_categories(self, df):
-        # check all the project cost columns are mapped
-        try:
-            start_income = np.nonzero(df.columns == 'income')[0][0] + 1
-        except IndexError:
-            raise IndexError(f'Could not find "income" in costs categories')
-        try:
-            end_income = np.nonzero(df.columns == 'total income')[0][0]
-        except IndexError:
-            raise IndexError(f'Could not find "total income" in costs categories')
-        categories = [
-            [cost, self.get_mps_category(cost)]
-            for cost in df.columns[start_income:end_income]
-        ]
+
+        return self.get_category_range(
+            df,
+            from_category=FinanceCategoriesEnum.income.value,
+            to_category=FinanceCategoriesEnum.total_income.value
+        )
+
+    def get_category_range(self, df, from_category, to_category):
+
+        start = np.nonzero(df.columns == from_category)
+        end = np.nonzero(df.columns == to_category)
+
+        if not np.any(start) & np.any(end):
+            categories = []
+        else:
+            categories = [
+                [cost, self.get_mps_category(cost)]
+                for cost in df.columns[start[0][0]+1:end[0][0]]
+            ]
 
         return pd.DataFrame(categories, columns=['finance', 'mps'])
 
     # drop columns that are not project costs or income and merge into the mps categories
     def get_mps_columns(self, df):
-        mps_project_categories = self.get_mps_project_categories(df)  # check all the project cost columns are mapped
-        try:
-            mps_income_categories = self.get_mps_income_categories(df)  # check all the project cost columns are mapped
-        except IndexError:
-            mps_income_categories = pd.DataFrame([], columns=['finance', 'mps'])
+
+        pcats = self.get_mps_project_categories(df)  # check all the project cost columns are mapped
+        icats = self.get_mps_income_categories(df)  # check all the project cost columns are mapped
 
         # merge the columns by the mps group
-        finance_columns = pd.concat([mps_project_categories.finance, mps_income_categories.finance]).values
-        mps_columns = pd.concat([mps_project_categories.mps, mps_income_categories.mps]).values
+        finance_columns = pd.concat([pcats.finance, icats.finance]).values
+        mps_columns = pd.concat([pcats.mps, icats.mps]).values
         df = df[finance_columns].T
         df['mps_code'] = mps_columns
         df = df.groupby('mps_code').sum().T
 
         return df
 
-    def get_date(self, val_str):
-        if re.match(r'^[1-9]+-[0-9]+ [a-zA-Z]+, 20[2-9][0-9]$', val_str):  # 'day-day month, year'
-            tmp = re.split(',| |-', val_str)
-            date = datetime.strptime(f'{tmp[-3]} {tmp[-1]}', '%B %Y')
-            day = tmp[1]
+    @staticmethod
+    def parse_date(datestring):
 
-        elif re.match(r'^[a-zA-Z]+ [1-9]+-[0-9]+, 20[2-9][0-9]$', val_str):  # 'month day-day, year'
-            tmp = re.split(',| |-', val_str)
-            date = datetime.strptime(f'{tmp[0]} {tmp[-1]}', '%B %Y')
-            day = tmp[2]
+        if re.match(r'^[1-9]+-[0-9]+ [a-zA-Z]+, 20[2-9][0-9]$', datestring):  # 'day-day month, year'
+            (sday, day, month, year) = re.split('-|, | ', datestring)
 
-        elif re.match(r'^[a-zA-Z]+ 20[2-9][0-9]$', val_str):  # 'month year'
-            date = datetime.strptime(val_str, '%B %Y')
+
+        elif re.match(r'^[a-zA-Z]+ [1-9]+-[0-9]+, 20[2-9][0-9]$', datestring):  # 'month day-day, year'
+            (month, sday, day, year) = re.split('-|, | ', datestring)
+
+        elif re.match(r'^[a-zA-Z]+ 20[2-9][0-9]$', datestring):  # 'month year'
+            (month, year) = re.split('-|, | ', datestring)
+            date = datetime.strptime(f'{month} {year}', '%B %Y')
             day = calendar.monthrange(date.year, date.month)[1]
 
         else:
-            raise ValueError(f'Unrecognised report date format "{val_str}"')
+            raise ValueError(f'Unrecognised report date format "{datestring}"')
 
-        year = date.strftime('%Y')
-        month = date.strftime('%B').lower()
+        date = datetime.strptime(f'{day} {month} {year}', '%d %B %Y')
 
-        return year, month, day
+        return date
 
     def import_profit_and_loss_report(self, path):
         # get the company name, report type and date - ignore if not a p&l
         df = pd.read_excel(path, header=None)
-        company_name = str(df.iloc[0, 0]).lower()
+        company_name = str(df.iloc[0, 0])
         report = str(df.iloc[1, 0]).lower()
 
         if report != PROFIT_AND_LOSS_TITLE:
             raise ValueError(f'"{path}" is not the recognised profit and loss report format.')
 
-        year, month, day = self.get_date(df.iloc[2, 0])
+        date = self.parse_date(df.iloc[2, 0])
+        datestr = date.strftime('%d/%m/%Y')
+        month = date.strftime('%B')
 
         # now just get the data
         df = pd.read_excel(path, header=self.excel_header_row - 1, index_col=0)
@@ -199,46 +221,55 @@ class MPSReporter(object):
         df = self.get_mps_columns(df)
 
         # parse out the project code and name and add them back in as seperate columns
-        projec_codes_and_names = [self.project_pattern.split(project)[1:] for project in df.index]
-        tmp = pd.DataFrame(projec_codes_and_names, columns=['code', 'name'])
+        project_codes_and_names = pd.DataFrame(
+            [self.project_pattern.split(project)[1:]
+             for project in df.index], columns=['code', 'name']
+        )
+        project_names = project_codes_and_names.name.values
+        project_codes = project_codes_and_names.code.values
 
         # get the exchange rate and convert to GBP
-        rate, currency = self.get_conversion_rate(company_name, year, month)
+        currency = self.get_currency(company_name)
+        rate = self.get_conversion_rate(currency, date.year, month)
         df[df.select_dtypes(include=['number']).columns] *= rate
 
         # add in the dataframe specific information to the columns
-        df.insert(0, 'Project Name', tmp.name.values)
-        df.insert(0, 'Project Code', tmp.code.values)
-        df.insert(0, 'Conversion Rate', rate)
-        df.insert(0, 'Converted From', currency)
-        df.insert(0, 'Currency', 'GBP')
-        df.insert(0, 'Year', year)
-        df.insert(0, 'Month', month)
-        df.insert(0, 'Day', day)
-        df.insert(0, 'Report', report)
-        df.insert(0, 'Company', company_name)
 
-        print(f'Parsed {company_name} {report} {month} {year} using exchange rate {rate}')
+        df.insert(0, f'{currency} to GBP', rate)
+        df.insert(0, ColumnNamesEnum.currency.value, 'GPB')
+        df.insert(0, ColumnNamesEnum.date.value, datestr)
+        df.insert(0, ColumnNamesEnum.project_name.value, project_names)
+        df.insert(0, ColumnNamesEnum.project_code.value, project_codes)
+
+        print(f'Parsed {company_name} {report} {datestr} using exchange rate {rate}')
 
         return df
 
-    def get_mps_report(self, folder, out_folder, out_fname='mps_report.csv'):
-        # parse all the xls files in a folder
-        reports = []
-        for path in glob(os.path.join(folder, '*.xlsx')):
-            if self.is_p_and_l_report(path):
-                try:
-                    reports.append(self.import_profit_and_loss_report(path))
-                except Exception as e:
-                    print(f'Unexpected error with report: {path} - {e}')
-                    raise e
-            else:
-                print(f'WARNING: Ignoring "{path}", format does not match profit and loss report.')
+    def merge_mps_reports(self, reports):
 
-        df = pd.concat(reports).fillna(0)
+        df = pd.concat(reports, ignore_index=True).fillna(0)
+        columns = [ColumnNamesEnum.project_code.value, ColumnNamesEnum.date.value]
+        df = df.groupby(columns).sum(numeric_only=True)
+
+        return df
+
+    def get_mps_report(self, finance_reports, out_folder, out_fname='mps_report.csv'):
+        # parse all the xls files in a folder
+        mps_reports = []
+        for report in finance_reports:
+            try:
+                if self.is_p_and_l_report(report):
+                    mps_reports.append(self.import_profit_and_loss_report(report))
+                else:
+                    print(f'WARNING: Ignoring "{report}", format does not match profit and loss report.')
+            except Exception as e:
+                print(f'Unexpected error with report: {report} - {e}')
+                raise e
+
+        df = self.merge_mps_reports(mps_reports)
         fname = os.path.join(out_folder, out_fname)
         df.to_csv(fname)
 
-        return df
+        return fname
 
 

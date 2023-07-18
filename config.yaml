@@ -4,18 +4,22 @@
 
 # this must contain an entry for the month found in the reports it does not need historical info
 exchange_rates:
-  - year: 2023
-    month: 'June'
-    AUD: 0.52  # conversion to GPB
-    CAD: 0.58  # conversion to GPB
-    USD: 0.76  # conversion to GPB
-    GBP: 1.00  # conversion to GPB
-  - year: 2023
-    month: 'July'
-    AUD: 0.52  # conversion to GPB
-    CAD: 0.58  # conversion to GPB
-    USD: 0.76  # conversion to GPB
-    GBP: 1.00  # conversion to GPB
+    AUD:
+      2023:
+        June: 0.52  # conversion to GPB
+        July: 0.52  # conversion to GPB
+    CAD:
+      2023:
+        June: 0.58  # conversion to GPB
+        July: 0.58  # conversion to GPB
+    USD:
+      2023:
+        June: 0.76  # conversion to GPB
+        July: 0.76  # conversion to GPB
+    GBP:
+      2023:
+        June: 1.00  # conversion to GPB
+        July: 1.00  # conversion to GPB
     
 # mps to finance cost mappings
 mps_category_mapping:
@@ -65,15 +69,15 @@ mps_category_mapping:
 
 # this should not need to change
 companies:
-  NMAP:
-    name: 'Network Mapping Pty Ltd'
+  'Network Mapping Pty Ltd':
+    code: 'NMAP'
     currency: 'AUD'
-  NMCP:
-    name: 'Network Mapping Corp'
+  'Network Mapping Corp':
+    code: 'NMCP'
     currency: 'CAD'
-  NMIP:
-    name: 'Network Mapping Inc'
+  'Network Mapping Inc':
+    code: 'NMIP'
     currency: 'USD'
-  NMLP:
-    name: 'Network Mapping Limited'
+  'Network Mapping Limited':
+    code: 'NMLP'
     currency: 'GBP'
