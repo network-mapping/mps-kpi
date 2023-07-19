@@ -1,6 +1,7 @@
 import os
 import argparse
 import yaml
+from datetime import datetime
 from glob import glob
 from mps_report_builder import mps_reporter
 from mps_report_builder import default_project_code_template
@@ -33,7 +34,8 @@ if __name__ == '__main__':
     if not any(report_paths):
         print(f'No finance reports found in "{clargs.input_path}".')
     else:
-        fname = mps_report_builder.get_mps_report(report_paths, clargs.output_path)
-        print(f'Written "{fname}".')
+        report_name = f'mps_report.{datetime.today().strftime("%Y.%m.%d")}.csv'
+        fname = mps_report_builder.get_mps_report(report_paths, clargs.output_path, out_fname=report_name)
+        print(f'Written {fname}.')
 
     print(f'Done.')

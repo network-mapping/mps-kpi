@@ -4,3 +4,4 @@ if %ENVNAME%==base (set ENVPATH=%CONDAPATH%) else (set ENVPATH=~\.conda\envs\%EN
 call %CONDAPATH%\Scripts\activate.bat %ENVPATH%
 python main.py 
 call conda deactivate
+pause

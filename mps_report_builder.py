@@ -9,6 +9,15 @@ from enum import Enum
 default_project_code_template = r'(^NM[ACIL]P[0-9]+)'
 default_excel_header_row = 5
 PROFIT_AND_LOSS_TITLE = 'profit and loss'
+GBP_CONVERSION = 'GBP to GBP'
+
+company_currency_conversion = {
+  'Network Mapping Pty Ltd': 'AUD to GBP',
+  'Network Mapping Corp': 'CAD to GBP',
+  'Network Mapping Inc': 'USD to GBP',
+  'Network Mapping Limited': GBP_CONVERSION
+}
+
 
 
 class ColumnNamesEnum(Enum):
@@ -16,6 +25,13 @@ class ColumnNamesEnum(Enum):
     project_code = 'Project Code'
     currency = 'Currency'
     date = 'Date'
+    aud_rate = 'AUD to GBP'
+    cad_rate = 'CAD to GBP'
+    usd_rate = 'USD to GBP'
+
+    @classmethod
+    def columns(cls):
+        return [x.value for x in list(cls)]
 
 
 class FinanceCategoriesEnum(Enum):
@@ -26,16 +42,6 @@ class FinanceCategoriesEnum(Enum):
 
 
 def validate_config(config):
-    if 'companies' not in config.keys():
-        raise ValueError('No companies defined in config')
-    else:
-        if config['companies'] is None:
-            raise ValueError(f'No companies are defined in config')
-        for k, v in config['companies'].items():
-            if 'code' not in v.keys():
-                raise ValueError(f'Company missing code: "{k}"')
-            if 'currency' not in v.keys():
-                raise ValueError(f'Company missing currency: "{k}"')
 
     if 'exchange_rates' not in config.keys():
         raise ValueError('No exchange_rates defined in config')
@@ -63,7 +69,6 @@ class MPSReporter(object):
 
     def __init__(self, config, excel_header_row, project_regex):
 
-        self.companies = config['companies']
         self.exchange_rates = config['exchange_rates']
         self.mps_mappings = config['mps_category_mapping']
         self.finance_mappings = self.map_finance_to_mps()
@@ -80,30 +85,34 @@ class MPSReporter(object):
 
         return finance_mappings
 
-    def get_currency(self, company_name):
+    @staticmethod
+    def get_currency_conversion(company_name):
 
-        if company_name not in self.companies.keys():
-            raise ValueError(f'Could not find "{company_name}" in config')
+        if company_name not in company_currency_conversion.keys():
+            raise ValueError(f'Unknown company: "{company_name}"')
         else:
-            return self.companies[company_name]['currency']
+            return company_currency_conversion[company_name]
 
-    def get_conversion_rate(self, currency, year, month):
+    def get_conversion_rate(self, conversion, year, month):
 
-        if currency not in self.exchange_rates.keys():
-            raise ValueError(f'Could not find "{currency}" in exchange_rates config')
-        else:
-            if year not in self.exchange_rates[currency].keys():
-                raise ValueError(f'Could not find "{year}" in exchange_rates config for {currency}')
+        if conversion not in self.exchange_rates.keys():
+            if conversion == GBP_CONVERSION:
+                return 1.
             else:
-                if month not in self.exchange_rates[currency][year].keys():
+                raise ValueError(f'Could not find "{conversion}" in exchange_rates config')
+        else:
+            if year not in self.exchange_rates[conversion].keys():
+                raise ValueError(f'Could not find "{year}" in exchange_rates config for {conversion}')
+            else:
+                if month not in self.exchange_rates[conversion][year].keys():
                     raise ValueError(
-                        f'Could not find "{month}" in exchange_rates config for {currency} in {year}')
+                        f'Could not find "{month}" in exchange_rates config for {conversion} in {year}')
                 else:
                     try:
-                        rate = float(self.exchange_rates[currency][year][month])
+                        rate = float(self.exchange_rates[conversion][year][month])
                     except ValueError:
                         raise ValueError(
-                            f'Invalid exchange rate found in config for {currency} in {month} {year}')
+                            f'Invalid exchange rate found in config for {conversion} in {month} {year}')
 
                     return rate
 
@@ -194,16 +203,38 @@ class MPSReporter(object):
 
         return date
 
-    def import_profit_and_loss_report(self, path):
+    def read_header_rows(self, df):
+
         # get the company name, report type and date - ignore if not a p&l
-        df = pd.read_excel(path, header=None)
         company_name = str(df.iloc[0, 0])
         report = str(df.iloc[1, 0]).lower()
+        datestr = str(df.iloc[2, 0])
 
-        if report != PROFIT_AND_LOSS_TITLE:
-            raise ValueError(f'"{path}" is not the recognised profit and loss report format.')
+        return company_name, report, datestr
 
-        date = self.parse_date(df.iloc[2, 0])
+    def convert_to_gbp(self, df, rate):
+
+        return df[df.select_dtypes(include=['number']).columns] * rate
+
+    def get_project_codes_and_names(self, df):
+
+        # parse out the project code and name as separate columns
+        project_codes_and_names = pd.DataFrame(
+            [self.project_pattern.split(project)[1:]
+             for project in df.index], columns=['code', 'name']
+        )
+        project_names = project_codes_and_names.name.values
+        project_codes = project_codes_and_names.code.values
+
+        return project_codes, project_names
+
+    def import_profit_and_loss_report(self, path):
+
+        # get the info from the header rows
+        company_name, report, datestr = self.read_header_rows(pd.read_excel(path, header=None))
+
+        # parse the date
+        date = self.parse_date(datestr)
         datestr = date.strftime('%d/%m/%Y')
         month = date.strftime('%B')
 
@@ -220,36 +251,38 @@ class MPSReporter(object):
         # drop columns that are not project costs or income and merge into the mps categories
         df = self.get_mps_columns(df)
 
-        # parse out the project code and name and add them back in as seperate columns
-        project_codes_and_names = pd.DataFrame(
-            [self.project_pattern.split(project)[1:]
-             for project in df.index], columns=['code', 'name']
-        )
-        project_names = project_codes_and_names.name.values
-        project_codes = project_codes_and_names.code.values
+        # parse out the project code and name as separate columns
+        project_codes, project_names = self.get_project_codes_and_names(df)
 
         # get the exchange rate and convert to GBP
-        currency = self.get_currency(company_name)
-        rate = self.get_conversion_rate(currency, date.year, month)
-        df[df.select_dtypes(include=['number']).columns] *= rate
+        currency_conversion = self.get_currency_conversion(company_name)
+        rate = self.get_conversion_rate(currency_conversion, date.year, month)
+        df = self.convert_to_gbp(df, rate)
 
-        # add in the dataframe specific information to the columns
-
-        df.insert(0, f'{currency} to GBP', rate)
-        df.insert(0, ColumnNamesEnum.currency.value, 'GPB')
-        df.insert(0, ColumnNamesEnum.date.value, datestr)
-        df.insert(0, ColumnNamesEnum.project_name.value, project_names)
-        df.insert(0, ColumnNamesEnum.project_code.value, project_codes)
+        self.add_columns(df, date, project_names, project_codes)
 
         print(f'Parsed {company_name} {report} {datestr} using exchange rate {rate}')
 
         return df
 
-    def merge_mps_reports(self, reports):
+    def add_columns(self, df, date, project_names, project_codes):
+
+        datestr = date.strftime('%d/%m/%Y')
+        month = date.strftime('%B')
+
+        # add in the dataframe specific information to the columns
+        for conversion in (ColumnNamesEnum.aud_rate, ColumnNamesEnum.cad_rate, ColumnNamesEnum.usd_rate):
+            df.insert(0, conversion.value, self.get_conversion_rate(conversion.value, date.year, month))
+        df.insert(0, ColumnNamesEnum.currency.value, 'GPB')
+        df.insert(0, ColumnNamesEnum.date.value, datestr)
+        df.insert(0, ColumnNamesEnum.project_name.value, project_names)
+        df.insert(0, ColumnNamesEnum.project_code.value, project_codes)
+
+    @staticmethod
+    def merge_company_mps_reports(reports):
 
         df = pd.concat(reports, ignore_index=True).fillna(0)
-        columns = [ColumnNamesEnum.project_code.value, ColumnNamesEnum.date.value]
-        df = df.groupby(columns).sum(numeric_only=True)
+        df = df.groupby(ColumnNamesEnum.columns()).sum(numeric_only=True)
 
         return df
 
@@ -257,16 +290,12 @@ class MPSReporter(object):
         # parse all the xls files in a folder
         mps_reports = []
         for report in finance_reports:
-            try:
-                if self.is_p_and_l_report(report):
-                    mps_reports.append(self.import_profit_and_loss_report(report))
-                else:
-                    print(f'WARNING: Ignoring "{report}", format does not match profit and loss report.')
-            except Exception as e:
-                print(f'Unexpected error with report: {report} - {e}')
-                raise e
+            if self.is_p_and_l_report(report):
+                mps_reports.append(self.import_profit_and_loss_report(report))
+            else:
+                print(f'WARNING: Ignoring "{report}", format does not match profit and loss report.')
 
-        df = self.merge_mps_reports(mps_reports)
+        df = self.merge_company_mps_reports(mps_reports)
         fname = os.path.join(out_folder, out_fname)
         df.to_csv(fname)
 

@@ -4,26 +4,22 @@
 
 # this must contain an entry for the month found in the reports it does not need historical info
 exchange_rates:
-    AUD:
+    AUD to GBP:
       2023:
         June: 0.52  # conversion to GPB
         July: 0.52  # conversion to GPB
-    CAD:
+    CAD to GBP:
       2023:
         June: 0.58  # conversion to GPB
         July: 0.58  # conversion to GPB
-    USD:
+    USD to GBP:
       2023:
         June: 0.76  # conversion to GPB
         July: 0.76  # conversion to GPB
-    GBP:
-      2023:
-        June: 1.00  # conversion to GPB
-        July: 1.00  # conversion to GPB
     
 # mps to finance cost mappings
 mps_category_mapping:
-  'Travel and Subsistence':                 # MPS category
+  Travel and Subsistence:                 # MPS category
     - 'accomodation'                        # Finance categories
     - 'accommodation'
     - 'airfares'
@@ -33,14 +29,15 @@ mps_category_mapping:
     - 'subsistance'
     - 'telephone'
     - 'travel'
-  'Aviation':                               # MPS category
+  Aviation:                               # MPS category
      - 'aviation'                           # Finance categories
-  'Shipping':                               # MPS category
+  Shipping:                               # MPS category
     - 'shipping'                            # Finance categories
-  'IS':                                     # MPS category
+  IS:                                     # MPS category
     - 'project is'                          # Finance categories
-  'Other':                                  # MPS category
+  Professional Services:
     - 'professional services'               # Finance categories
+  Other:                                  # MPS category
     - 'equipment'
     - 'staff entertainment'
     - 'bank charges'
@@ -65,19 +62,3 @@ mps_category_mapping:
     - 'sales - intercompany trading'
   'Income':                                 # MPS category
     - 'services'                            # Finance categories
-
-
-# this should not need to change
-companies:
-  'Network Mapping Pty Ltd':
-    code: 'NMAP'
-    currency: 'AUD'
-  'Network Mapping Corp':
-    code: 'NMCP'
-    currency: 'CAD'
-  'Network Mapping Inc':
-    code: 'NMIP'
-    currency: 'USD'
-  'Network Mapping Limited':
-    code: 'NMLP'
-    currency: 'GBP'
