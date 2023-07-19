@@ -17,7 +17,7 @@ exchange_rates:
         June: 0.76  # conversion to GPB
         July: 0.76  # conversion to GPB
     
-# mps to finance cost mappings
+# mps to finance cost mappings - finance categories must be a list
 mps_category_mapping:
   Travel and Subsistence:                 # MPS category
     - 'accomodation'                        # Finance categories
@@ -42,23 +42,23 @@ mps_category_mapping:
     - 'staff entertainment'
     - 'bank charges'
     - 'state tax deductions'
-  'Subcontractors':                         # MPS category
+  Subcontractors:                         # MPS category
     - 'sub-contractors'                     # Finance categories
-  'Salaries - Ops':                         # MPS category
+  Salaries - Ops:                         # MPS category
     - 'salaries - field ops'                # Finance categories
-  'Salaries - Production':                  # MPS category
+  Salaries - Production:                  # MPS category
     - 'salaries - production'               # Finance categories
-  'Salaries - Project Management':          # MPS category
+  Salaries - Project Management:          # MPS category
      - 'salaries - project management'      # Finance categories
-  'Liquidated damages':                     # MPS category
+  Liquidated damages:                     # MPS category
      - 'liquidated damages'                 # Finance categories
-  'Cost of Goods Sold':                     # MPS category
+  Cost of Goods Sold:                     # MPS category
     - 'total cost of sales'                 # Finance categories
     - 'total cost of goods sold'
-  'Internal Trade':                         # these categories are ignored
+  Internal Trade:                         # these categories are excluded
     - 'data processing'                     # Finance categories
     - 'data processing (internal)'
     - 'salaries internal trade'
     - 'sales - intercompany trading'
-  'Income':                                 # MPS category
+  Income:                                 # MPS category
     - 'services'                            # Finance categories
