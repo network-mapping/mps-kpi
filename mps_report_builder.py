@@ -19,7 +19,6 @@ company_currency_conversion = {
 }
 
 
-
 class ColumnNamesEnum(Enum):
     project_name = 'Project Name'
     project_code = 'Project Code'
@@ -282,7 +281,12 @@ class MPSReporter(object):
     def merge_company_mps_reports(reports):
 
         df = pd.concat(reports, ignore_index=True).fillna(0)
-        df = df.groupby(ColumnNamesEnum.columns()).sum(numeric_only=True)
+        merge_columns = [
+            ColumnNamesEnum.project_code.value,
+            ColumnNamesEnum.currency.value,
+            ColumnNamesEnum.date.value
+        ]
+        df = df.groupby(merge_columns).sum(numeric_only=True)
 
         return df
 
