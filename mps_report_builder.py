@@ -284,7 +284,10 @@ class MPSReporter(object):
         merge_columns = [
             ColumnNamesEnum.project_code.value,
             ColumnNamesEnum.currency.value,
-            ColumnNamesEnum.date.value
+            ColumnNamesEnum.date.value,
+            ColumnNamesEnum.aud_rate.value,
+            ColumnNamesEnum.cad_rate.value,
+            ColumnNamesEnum.usd_rate.value
         ]
         df = df.groupby(merge_columns).sum(numeric_only=True)
 
