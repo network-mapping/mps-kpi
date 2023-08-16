@@ -3,9 +3,9 @@ name:  MPS Report Generator
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dockerized-mps-backend ]
   pull_request:
-    branches: [ main ]
+    branches: [ dockerized-mps-backend ]
 
 jobs:
   build:
