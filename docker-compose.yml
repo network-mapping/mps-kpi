@@ -2,5 +2,9 @@ services:
   web: 
     build:
      context: src
-    ports: 
-      - '1293:6900'
+    networks:
+      - network1
+networks:
+  network1:
+    name: nginx-proxy-manager_default
+    external: true
