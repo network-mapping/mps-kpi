@@ -22,11 +22,15 @@
       <div class="col-md-6 offset-md-3">
         <h1 class="text-center">NMG MPS Report Generator</h1>
         <br/>
+
+        {% if downloads %}
         <h2>Downloads</h2>
+        
         {% for download in downloads %}
             <a href="{{ url_for('finance_download', filename=download.link) }}"><button type="button" class="btn btn-primary">{{download.name}}</button></a>
         {% endfor %}
         <br>
+        {% endif %}
     <h2>Create a new report</h2>
         <form action="/api/mps/report/run" method="post" enctype="multipart/form-data">
           <div class="form-group">
