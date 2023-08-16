@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
 
     - name:  MPS Report Generator
-      uses: JackMcKew/pyinstaller-action-windows@main
+      uses: JackMcKew/pyinstaller-action-windows@python3-10-pyinstaller-5-3
       with:
         path: src
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v2
       with:
         name:  mps-report-generator
         path: src/dist/windows
