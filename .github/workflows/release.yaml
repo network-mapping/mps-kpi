@@ -8,9 +8,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
 
@@ -31,12 +29,12 @@ jobs:
         name:  mps-report-generator
         path: src/dist/windows
 
-     - name: upload windows artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/windows/mps_reporter_cli.exe
-          asset_name: mps_reporter_cli-${{ GITHUB_REF#refs/*/ }}.exe
-          asset_content_type: application/x-msdownload
+    - name: upload windows artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/windows/mps_reporter_cli.exe
+        asset_name: mps_reporter_cli-${{ GITHUB_REF#refs/*/ }}.exe
+        asset_content_type: application/x-msdownload
