@@ -3,9 +3,9 @@ name:  MPS Report Generator
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dockerized-mps-backend ]
   pull_request:
-    branches: [ main ]
+    branches: [ dockerized-mps-backend ]
 
 jobs:
   build:
@@ -16,7 +16,13 @@ jobs:
     - uses: actions/checkout@v2
 
     - name:  MPS Report Generator
-      uses: JackMcKew/pyinstaller-action-windows@main
+      uses: JackMcKew/pyinstaller-action-windows@python3-10-pyinstaller-5-3
+      env:
+        FINANCE_REPORT_LOCATION: uploads
+        PROJECT_CODE_TEMPLATE: ${{ '(^NM[ACIL]P[0-9]+)' }}
+        DEFAULT_CONFIG_FILE: config.yaml
+        DEFAULT_INPUT_PATH: finance_reports
+        DEFAULT_OUTPUT_PATH: outputs
       with:
         path: src
 
