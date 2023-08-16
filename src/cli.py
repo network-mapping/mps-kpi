@@ -15,9 +15,9 @@ from dotenv import load_dotenv
 if __name__ == '__main__':
     load_dotenv()
     APP_ROOT = dirname(realpath(__file__))
-    default_config_file = join(APP_ROOT,os.getenv('DEFAULT_CONFIG_FILE'))
-    default_input_path =  join(APP_ROOT,os.getenv('DEFAULT_INPUT_PATH'))
-    default_output_path = join(APP_ROOT,os.getenv('DEFAULT_OUTPUT_PATH'))
+    default_config_file = join(APP_ROOT,os.getenv('DEFAULT_CONFIG_FILE') or 'config.yaml' )
+    default_input_path =  join(APP_ROOT,os.getenv('DEFAULT_INPUT_PATH') or 'finance_reports')
+    default_output_path = join(APP_ROOT,os.getenv('DEFAULT_OUTPUT_PATH') or 'outputs')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--excel_header_row', type=int, default=default_excel_header_row,
