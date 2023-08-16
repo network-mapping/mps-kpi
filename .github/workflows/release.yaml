@@ -1,0 +1,42 @@
+
+name:  MPS Report Generator
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name:  MPS Report Generator
+      uses: JackMcKew/pyinstaller-action-windows@python3-10-pyinstaller-5-3
+      id: create_release
+      env:
+        FINANCE_REPORT_LOCATION: uploads
+        PROJECT_CODE_TEMPLATE: ${{ '(^NM[ACIL]P[0-9]+)' }}
+        DEFAULT_CONFIG_FILE: config.yaml
+        DEFAULT_INPUT_PATH: finance_reports
+        DEFAULT_OUTPUT_PATH: outputs
+      with:
+        path: src
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name:  mps-report-generator
+        path: src/dist/windows
+
+     - name: upload windows artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/windows/mps_reporter_cli.exe
+          asset_name: mps_reporter_cli-${{ GITHUB_REF#refs/*/ }}.exe
+          asset_content_type: application/x-msdownload
