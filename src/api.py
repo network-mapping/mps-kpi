@@ -10,7 +10,7 @@ import json
 import urllib
 
 load_dotenv()
-app = Flask(__name__)
+app = Flask(__name__,static_url_path='',static_folder='./assets')
 APP_ROOT = dirname(realpath(__file__))
 downloads = []
 app.secret_key = "super secret key"
