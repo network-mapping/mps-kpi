@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NMG MPS Report Generator</title>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="alert alert-success" role="alert">
+      {% for message in messages %}
+        {{ message }} </br>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+  <!-- Include Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-6 offset-md-3">
+        <h1 class="text-center">NMG MPS Report Generator</h1>
+        <br/>
+        <h2>Downloads</h2>
+        {% for download in downloads %}
+            <a href="{{ url_for('finance_download', filename=download.link) }}"><button type="button" class="btn btn-primary">{{download.name}}</button></a>
+        {% endfor %}
+        <br>
+    <h2>Create a new report</h2>
+        <form action="/api/mps/report/run" method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="reports">Quickbooks reports</label>
+            <input type="file" class="form-control" id="reports" name="reports" placeholder="reports to analyse..." multiple>
+            <br/>
+            <label for="config">Config</label>
+            <a href="{{ url_for('example_config_download') }}">Example Config File</a>
+            <textarea class="form-control" id="config" name="config" rows="15" placeholder="Enter config file in YAML format"></textarea>
+            <label for="excel_header_row">Excel Header Row</label>
+            <input type="number" class="form-control" id="excel_header_row" name="excel_header_row" placeholder="Enter the excel row number which contains the project column headings..." value=5></input>
+            
+          </div>
+          <button type="submit" class="btn btn-primary">Generate Report</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Include Bootstrap JS (Optional, for certain Bootstrap features) -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
