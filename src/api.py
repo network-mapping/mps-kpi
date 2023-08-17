@@ -43,10 +43,12 @@ def run_report():
         if not user_provided_config:
           flash({"error":'You must submit a config file!'})
           return redirect(url_for('index'))
-        excel_header_row = int(request.form.get('excel_header_row'))
-        if not excel_header_row:
+        excel_header_row_input = request.form.get('excel_header_row')
+        if not excel_header_row_input:
           flash({"error":'You must provide a excel row header (the default is 5)!'})
           return redirect(url_for('index'))
+        excel_header_row = int(excel_header_row_input)
+       
         project_code_template = os.getenv('PROJECT_CODE_TEMPLATE')
        
         #gather info from uploaded reports 
