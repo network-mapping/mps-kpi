@@ -2,7 +2,7 @@ from datetime import datetime
 from glob import glob
 import os
 from os.path import join, dirname, realpath
-from flask import Flask, request, send_file, render_template, flash
+from flask import Flask, request, send_file, render_template, flash, redirect,url_for
 import yaml
 from dotenv import load_dotenv
 from mps_report_builder import mps_reporter
@@ -12,13 +12,12 @@ import urllib
 load_dotenv()
 app = Flask(__name__,static_url_path='',static_folder='./assets')
 APP_ROOT = dirname(realpath(__file__))
-downloads = []
 app.secret_key = "super secret key"
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', form=request.args.get('form') or {}, downloads=request.args.get('downloads'))
 
 @app.route('/api/mps/report/run', methods=['POST'])
 def run_report():
@@ -27,13 +26,23 @@ def run_report():
     
         # Get the list of files from webpage
         reports = request.files.getlist("reports")
+       
         # save reports to disk
-        [report.save(join(APP_ROOT,'uploads/',f'{report.filename}')) for report in reports]
+        for report in reports:
+           if not report.filename:
+            flash({"error":'You must submit reports!'})
+            return redirect(url_for('index'))
+        else:
+          report.save(join(APP_ROOT,'uploads/',f'{report.filename}'))
+          
         #set the paths to point to the uploaded reports
         report_paths = [join(APP_ROOT,'uploads/',f'{report.filename}') for report in reports]
 
         #set user overrides   
         user_provided_config = yaml.safe_load(request.form.get('config')) #use json formatted config
+        if not user_provided_config:
+          flash({"error":'You must submit a config file!'})
+          return redirect(url_for('index'))
         excel_header_row = int(request.form.get('excel_header_row'))
         project_code_template = os.getenv('PROJECT_CODE_TEMPLATE')
        
@@ -47,15 +56,15 @@ def run_report():
             fname = mps_report_builder.get_mps_report(report_paths, join(APP_ROOT, 'outputs'), out_fname=report_name)
             print(fname)
             
-            downloads.append(
+            flash(
               {
-                "link": urllib.parse.quote(fname, safe=''),
-                "name":report_name
+              "text":"Analysis complete click Download to get your report!",
+              "download_link": urllib.parse.quote(fname, safe=''),
+              "download_name": report_name
               }
-            )
-            flash('Analysis complete click Download to get your report!')
-            return render_template('index.html', form={}, downloads=downloads)
-          
+              )
+            # return render_template('index.html', form={}, downloads=downloads)
+            return redirect(url_for('index'))
         
 
 @app.route('/finance_download/<filename>')

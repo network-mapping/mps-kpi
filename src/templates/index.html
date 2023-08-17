@@ -5,15 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
   <title>NMG MPS Report Generator</title>
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <div class="alert alert-success" role="alert">
-      {% for message in messages %}
-        {{ message }} </br>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
+ 
   <!-- Include Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
@@ -21,18 +13,42 @@
     <nav class="navbar navbar-expand-md bg-dark navbar-dark">
         <a class="navbar-brand" href="/">MPS Report Generator</a>
       </nav>
+
   <div class="container mt-5">
+   
     <div class="row">
       <div class="col-md-6 offset-md-3">
 
-        {% if downloads %}
-        <h2>Downloads</h2>
-        
-        {% for download in downloads %}
-            <a href="{{ url_for('finance_download', filename=download.link) }}"><button type="button" class="btn btn-primary">{{download.name}}</button></a>
-        {% endfor %}
-        <br>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+          {% if message.error %}
+          <div class="alert alert-danger alert-dismissible" role="alert">
+          
+            {{ message.error }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+             
+        </div>
+          {% endif %}
+          {% if message.download_link %}
+          <div class="alert alert-success alert-dismissible" role="alert">
+          
+              {{ message.text }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+               
+          </div>
+          <br/>
+          <a class="pb-5" href="{{ url_for('finance_download', filename=message.download_link) }}">
+              <button type="button" class="btn btn-primary">Download - {{message.download_name}}</button>
+          </a>
         {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
     <h2>Create a new report</h2>
         <form action="/api/mps/report/run" method="post" enctype="multipart/form-data">
           <div class="form-group">
