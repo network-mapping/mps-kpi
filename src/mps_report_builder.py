@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-default_project_code_template = os.getenv('PROJECT_CODE_TEMPLATE')
+default_project_code_template = os.getenv('PROJECT_CODE_TEMPLATE') or r'(^NM[ACIL]P[0-9]+)'
 default_excel_header_row = 5
 PROFIT_AND_LOSS_TITLE = 'profit and loss'
 GBP_CONVERSION = 'GBP to GBP'
@@ -58,6 +58,7 @@ def validate_config(config):
 
 def mps_reporter(config, excel_header_row, project_regex):
 
+    
     try:
         validate_config(config)
     except Exception as e:

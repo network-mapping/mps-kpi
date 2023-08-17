@@ -13,7 +13,9 @@ load_dotenv()
 app = Flask(__name__,static_url_path='',static_folder='./assets')
 APP_ROOT = dirname(realpath(__file__))
 app.secret_key = "super secret key"
-
+default_output_path = join(APP_ROOT,os.getenv('DEFAULT_OUTPUT_PATH') or 'outputs')
+if not os.path.exists(default_output_path):
+  os.makedirs(default_output_path)
 
 @app.route('/')
 def index():
@@ -38,29 +40,33 @@ def run_report():
         #set the paths to point to the uploaded reports
         report_paths = [join(APP_ROOT,'uploads/',f'{report.filename}') for report in reports]
 
-        #set user overrides   
-        user_provided_config = yaml.safe_load(request.form.get('config')) #use json formatted config
-        if not user_provided_config:
-          flash({"error":'You must submit a config file!'})
-          return redirect(url_for('index'))
-        excel_header_row_input = request.form.get('excel_header_row')
-        if not excel_header_row_input:
-          flash({"error":'You must provide a excel row header (the default is 5)!'})
-          return redirect(url_for('index'))
-        excel_header_row = int(excel_header_row_input)
        
-        project_code_template = os.getenv('PROJECT_CODE_TEMPLATE')
+ 
        
-        #gather info from uploaded reports 
-        mps_report_builder = mps_reporter(user_provided_config, excel_header_row, project_code_template)
-
         if not any(report_paths):
           return f'No finance reports found in uploaded files'
         else:
+               
+            #set user overrides   
+            user_provided_config = yaml.safe_load(request.form.get('config')) #use yaml formatted config
+            if not user_provided_config:
+              flash({"error":'You must submit a config file!'})
+              return redirect(url_for('index'))
+            excel_header_row_input = request.form.get('excel_header_row')
+            if not excel_header_row_input:
+              flash({"error":'You must provide a excel row header (the default is 5)!'})
+              return redirect(url_for('index'))
+            excel_header_row = int(excel_header_row_input)
+            project_code_template = os.getenv('PROJECT_CODE_TEMPLATE') or r'(^NM[ACIL]P[0-9]+)'
+          
+            #gather info from uploaded reports 
+            mps_report_builder = mps_reporter(user_provided_config, excel_header_row, project_code_template)
+            # set report name
             report_name = f'mps_report.{datetime.today().strftime("%Y.%m.%d")}.csv'
+            # build report and return its path
             fname = mps_report_builder.get_mps_report(report_paths, join(APP_ROOT, 'outputs'), out_fname=report_name)
             print(fname)
-            
+            # send success message to user with download link
             flash(
               {
               "text":"Analysis complete click Download to get your report!",
