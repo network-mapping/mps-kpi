@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <title>NMG MPS Report Generator</title>
+
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+        <a class="navbar-brand" href="/">MPS Report Generator</a>
+    </nav>
+
+    <div class="container mt-5 text-center">
+
+        
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="col-md-10 offset-md-1">
+                {% for message in messages %}
+                {% if message.error %}
+                <div class="alert alert-danger alert-dismissible" role="alert">
+
+                    {{ message.error }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+
+                </div>
+                {% endif %}
+                {% if message.success %}
+                <div class="alert alert-success alert-dismissible" role="alert">
+
+                    {{ message.success }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <div class="row mb-20 align-items-start">
+                <div class="col align-items-start">
+                    <h2>Update the system configuration</h2>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <h3>Step 1. Download the current configuration</h3>
+                    <a href="{{ url_for('current_config_download') }}"><button
+                            class="btn btn-primary">Download</button></a>
+                </div>
+            </div>
+            <br>
+            <br>
+            <br>
+            <div class="row mb-20 align-items-center">
+                <div class="col">
+                    <h3>Step 2. Edit the configuration in any text editor you like  <br> (ensure syntax is YAML compliant)
+                    </h3>
+                </div>
+            </div>
+            <br>
+            <br>
+            <br>
+            <div class="row mb-20 align-items-end">
+                <div class="col">
+                    <h3>Step 3. Upload your new configuration file <br> (this will persist and be used for all future
+                        reports)
+                    </h3>
+                    <form action="/settings/config" method="post" enctype="multipart/form-data">
+                        <div class="form-group justify-content-center">
+                            <center>
+                                <input style="width:25%" type="file" class="form-control" id="new_config" name="new_config"></input>
+                            </center>
+                            <!-- <label for="excel_header_row">Excel Header Row</label>
+            <input type="number" class="form-control" id="excel_header_row" name="excel_header_row" placeholder="Enter the excel row number which contains the project column headings..." value=5></input> -->
+
+                        </div>
+                        <button type="submit" class="btn btn-success">Update Config</button>
+                    </form>
+                </div>
+            </div>
+            <br>
+            <br>
+            <br>
+            <br>    
+            <a href="{{ url_for('index') }}"><button
+                class="btn btn-secondary">Back Home</button></a>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS (Optional, for certain Bootstrap features) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

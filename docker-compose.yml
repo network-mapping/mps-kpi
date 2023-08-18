@@ -1,0 +1,10 @@
+services: 
+  web: 
+    build:
+     context: src
+    networks:
+      - network1
+networks:
+  network1:
+    name: nginx-proxy-manager_default
+    external: true
