@@ -105,6 +105,9 @@ def update_config():
         new_config = request.files.get('new_config')
 
         new_config.save(join(APP_ROOT, 'config.yaml'))
+        flash({
+           "success": "Successfully updated config file"
+        })
  
     return render_template('config.html')
 

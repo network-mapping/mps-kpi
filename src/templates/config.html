@@ -34,6 +34,16 @@
 
                 </div>
                 {% endif %}
+                {% if message.success %}
+                <div class="alert alert-success alert-dismissible" role="alert">
+
+                    {{ message.success }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+
+                </div>
+                {% endif %}
                 {% endfor %}
             </div>
             {% endif %}
@@ -79,7 +89,7 @@
             <input type="number" class="form-control" id="excel_header_row" name="excel_header_row" placeholder="Enter the excel row number which contains the project column headings..." value=5></input> -->
 
                         </div>
-                        <button type="submit" class="btn btn-primary">Update Config</button>
+                        <button type="submit" class="btn btn-success">Update Config</button>
                     </form>
                 </div>
             </div>
