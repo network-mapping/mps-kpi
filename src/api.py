@@ -48,19 +48,13 @@ def run_report():
         else:
                
             #set user overrides   
-            user_provided_config = yaml.safe_load(request.form.get('config')) #use yaml formatted config
-            if not user_provided_config:
-              flash({"error":'You must submit a config file!'})
-              return redirect(url_for('index'))
-            excel_header_row_input = request.form.get('excel_header_row')
-            if not excel_header_row_input:
-              flash({"error":'You must provide a excel row header (the default is 5)!'})
-              return redirect(url_for('index'))
-            excel_header_row = int(excel_header_row_input)
+         #use yaml formatted config
+           
             project_code_template = os.getenv('PROJECT_CODE_TEMPLATE') or r'(^NM[ACIL]P[0-9]+)'
-          
+            excel_header_row = os.getenv('EXCEL_HEADER_ROW') or 5
+            config_file = yaml.load(open(join(APP_ROOT,'config.yaml'), "r"), Loader=yaml.FullLoader)
             #gather info from uploaded reports 
-            mps_report_builder = mps_reporter(user_provided_config, excel_header_row, project_code_template)
+            mps_report_builder = mps_reporter(config_file, excel_header_row , project_code_template)
             # set report name
             report_name = f'mps_report.{datetime.today().strftime("%Y.%m.%d")}.csv'
             # build report and return its path
