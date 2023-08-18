@@ -82,8 +82,8 @@ def run_report():
 def finance_download(filename):
     return send_file(urllib.parse.unquote(filename))
 
-@app.route('/example_config')
-def example_config_download():
+@app.route('/current_config')
+def current_config_download():
     return send_file(join(APP_ROOT,'config.yaml'))
 
 def zipfolder(foldername, target_dir):            
@@ -104,6 +104,15 @@ def exe_download():
     return send_file('mps-generator-offline.zip')
 
 
+
+@app.route('/settings/config', methods=['GET', 'POST'])
+def update_config():
+    if request.method == 'POST':
+        new_config = request.files.get('new_config')
+
+        new_config.save(join(APP_ROOT, 'config.yaml'))
+ 
+    return render_template('config.html')
 
   
 if __name__ == '__main__':
