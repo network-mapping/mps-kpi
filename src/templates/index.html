@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
   <title>NMG MPS Report Generator</title>
- 
+
   <!-- Include Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-md bg-dark navbar-dark">
-        <a class="navbar-brand" href="/">MPS Report Generator</a>
+  <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+    <a class="navbar-brand" href="/">MPS Report Generator</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -23,46 +26,71 @@
         </li>
       </ul>
     </div>
-      </nav>
+  </nav>
 
-  <div class="container mt-5">
-   
-    <div class="row">
+
+  <div class="container mt-5 ">
+    <h1>Welcome to MPS Report Generator</h1>
+    <p>
+      The purpose of this service is to read in profit and loss reports generated from Quickbooks for each of the groups
+      companies, converts them to GBP, maps the categories across to the desired MPS categories and merges them into a
+      single report with one line for each project and date.
+      The report builder only considers costs in the Projects section of the finance report and also extracts the income
+      categories. The application will allow upload of .xlsx files and process the ones that have the expected format.
+    </p>
+    <div class="row text-center">
       <div class="col-md-6 offset-md-3">
 
         {% with messages = get_flashed_messages() %}
         {% if messages %}
-          {% for message in messages %}
-          {% if message.error %}
-          <div class="alert alert-danger alert-dismissible" role="alert">
-          
-            {{ message.error }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-             
+        {% for message in messages %}
+        {% if message.error %}
+        <div class="alert alert-danger alert-dismissible" role="alert">
+
+          {{ message.error }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+
         </div>
-          {% endif %}
-          {% if message.download_link %}
-          <div class="alert alert-success alert-dismissible" role="alert">
-          
-              {{ message.text }}
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-               
-          </div>
-          <br/>
-          <a class="pb-5" href="{{ url_for('finance_download', filename=message.download_link) }}">
-              <button type="button" class="btn btn-primary">Download - {{message.download_name}}</button>
-          </a>
         {% endif %}
-          {% endfor %}
+        {% if message.download_link %}
+        <div class="alert alert-success alert-dismissible" role="alert">
+
+          {{ message.text }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+
+        </div>
+        <br />
+        <a class="pb-5" href="{{ url_for('finance_download', filename=message.download_link) }}">
+          <button type="button" class="btn btn-primary">Download - {{message.download_name}}</button>
+        </a>
         {% endif %}
-      {% endwith %}
-    <h2>Create a new report</h2>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+
+
+        <h2>Get Started</h2>
+        <br>
+        <br>
+        <br>
         <form action="/api/mps/report/run" method="post" enctype="multipart/form-data">
           <div class="form-group">
+            <label for="reports">Upload input files</label>
+            <input type="file" class="form-control" id="reports" name="reports" placeholder="reports to analyse..."
+              multiple>
+          </div>
+          <br>
+          <br>
+          <br>
+          <button type="submit" class="btn btn-success">Generate Report</button>
+        </form>
+      </div>
+    </div>
 
 
     <div class="fixed-bottom px-2 py-5 text-center bg-dark rounded mx-auto  text-light">
@@ -145,20 +173,26 @@
               <h3>Step 5. Check the output folder for your result </h3>
               <br>
               <p> there should now be a file in the format mps_report.yyyy.mm.dd.csv </p>
-            
+             
           </div>
       </div>
-    </div>
+      </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
+</div>
+        
+      
+
   </div>
+
 
   <!-- Include Bootstrap JS (Optional, for certain Bootstrap features) -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>
