@@ -6,7 +6,7 @@ from flask import Flask, request, send_file, render_template, flash, redirect,ur
 import yaml
 from dotenv import load_dotenv
 from mps_report_builder import mps_reporter
-import json
+import zipfile
 import urllib
 
 load_dotenv()
@@ -85,6 +85,26 @@ def finance_download(filename):
 @app.route('/example_config')
 def example_config_download():
     return send_file(join(APP_ROOT,'config.yaml'))
+
+def zipfolder(foldername, target_dir):            
+    zipobj = zipfile.ZipFile(foldername + '.zip', 'w', zipfile.ZIP_DEFLATED)
+    rootlen = len(target_dir) + 1
+    for base, dirs, files in os.walk(target_dir):
+        for file in files:
+            fn = join(base, file)
+            zipobj.write(fn, fn[rootlen:])
+        for directory in dirs:
+            zipobj.write(base, directory)
+
+
+@app.route('/exe_download')
+def exe_download():
+    filename = 'src\mps-generator-offline'
+    zipfolder(filename, 'src\offline_builds')
+    return send_file('mps-generator-offline.zip')
+
+
+
   
 if __name__ == '__main__':
     app.run(port=os.getenv('PORT'), host=os.getenv('HOST'))

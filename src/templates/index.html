@@ -52,20 +52,97 @@
     <h2>Create a new report</h2>
         <form action="/api/mps/report/run" method="post" enctype="multipart/form-data">
           <div class="form-group">
-            <label for="reports">Quickbooks reports</label>
-            <input type="file" class="form-control" id="reports" name="reports" placeholder="reports to analyse..." multiple>
-            <br/>
-            <label for="config">Config</label>
-            <a href="{{ url_for('example_config_download') }}">Example Config File</a>
-            <textarea class="form-control" id="config" name="config" rows="15" placeholder="Enter config file in YAML format"></textarea>
-            <label for="excel_header_row">Excel Header Row</label>
-            <input type="number" class="form-control" id="excel_header_row" name="excel_header_row" placeholder="Enter the excel row number which contains the project column headings..." value=5></input>
+
+
+    <div class="fixed-bottom px-2 py-5 text-center bg-dark rounded mx-auto  text-light">
+      
+        
+
+          <h4>Need to run this offline?</h4>
+          <p>Click the download button below to access the offline version. <br> Click the Docs button below for a step by step guide on how to use MPS Report Generator in offline mode.</p>
+          
+          
+          
+          <a href="{{ url_for('exe_download') }}">
+            <button class="btn btn-success">Download</button>
+          </a>
+
+          <!-- <a href="https://github.com/network-mapping-dev/mps-kpi">
+            <button class="btn btn-info">Docs</button>
+          </a> -->
+          
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-info" data-toggle="modal" data-target="#modelId" data-backdrop="false">
+  Docs
+</button>
+
+<!-- Modal -->
+<div class="modal mt-4 fade" id="modelId" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white-50">
+        <h5 class="modal-title">MPS Report Generator EXE Documentation</h5>
+          <button type="button" class="close text-white-50" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+      </div>
+      <div class="modal-body text-black-50">
+        <div class="row mb-20 align-items-start">
+          <div class="col align-items-start">
+              <h2>Using the windows mps_reporter_cli.exe</h2>
+              <br>
+                  
+              <h3>Step 1. Hit download to get the zip file</h3>
+              <br>
+              <p>This zip contains everything you need to use the exe.
+              <br>
+              If you have already got the zip file downloaded and extracted on your PC you can skip this step.</p>
+              
+          </div>
+      </div>
+      <br>
+      <div class="row mb-20 align-items-center">
+        <div class="col">
+            <h3>Step 2. Right click the zip and extract it  </h3>
+            <br>
+            <p>The correct extract option should result in a folder of the same name as the zip</p>
+            
+        </div>
+    </div>
+    <br>
+      <div class="row mb-20 align-items-center">
+        <div class="col">
+            <h3>Step 3. Place Quickbooks reports into the inputs folder within the extracted folder </h3>
+            <br>
+            <p> n.b Got the files somewhere else? Use shift + right click on the folder containing your Quickbooks reports and select 'copy as path' and use  this in place of ./input in the command in Step 4.</p>
+            
+        </div>
+    </div>
+    <br>
+ 
+      <div class="row mb-20 align-items-center">
+          <div class="col">
+              <h3>Step 4. Run the CLI command</h3>
+              <br>
+              <p> ./mps_reporter_cli.exe --config config.yaml --input_path ./inputs --output_path ./outputs</p>
+          </div>
+      </div>
+      <br>
+   
+      <div class="row mb-20 align-items-end">
+          <div class="col">
+              <h3>Step 5. Check the output folder for your result </h3>
+              <br>
+              <p> there should now be a file in the format mps_report.yyyy.mm.dd.csv </p>
             
           </div>
-          <button type="submit" class="btn btn-primary">Generate Report</button>
-        </form>
       </div>
     </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
   </div>
 
   <!-- Include Bootstrap JS (Optional, for certain Bootstrap features) -->
