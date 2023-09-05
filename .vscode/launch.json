@@ -1,0 +1,14 @@
+    {
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "justMyCode": false,
+            "name": "MPS FLASK",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/api.py",
+            "python": "${workspaceFaolder}/venv/bin/python"
+          },
+      
+    ]
+}

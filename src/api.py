@@ -8,6 +8,10 @@ from dotenv import load_dotenv
 from mps_report_builder import mps_reporter
 import zipfile
 import urllib
+from flask import json
+from werkzeug.exceptions import HTTPException
+import traceback
+
 
 load_dotenv()
 app = Flask(__name__,static_url_path='',static_folder='./assets')
@@ -16,7 +20,21 @@ app.secret_key = "super secret key"
 default_output_path = join(APP_ROOT,os.getenv('DEFAULT_OUTPUT_PATH') or 'outputs')
 if not os.path.exists(default_output_path):
   os.makedirs(default_output_path)
-
+  
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    # start with the correct headers and status code from the error
+    response = e.get_response()
+    # replace the body with JSON
+    response.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": traceback.format_exc().split('\n'),
+    })
+    response.content_type = "application/json"
+    return response
+  
 @app.route('/')
 def index():
     return render_template('index.html', form=request.args.get('form') or {}, downloads=request.args.get('downloads'))
@@ -38,7 +56,7 @@ def run_report():
           report.save(join(APP_ROOT,'uploads/',f'{report.filename}'))
           
         #set the paths to point to the uploaded reports
-        report_paths = [join(APP_ROOT,'uploads/',f'{report.filename}') for report in reports]
+          report_paths = [join(APP_ROOT,'uploads/',f'{report.filename}') for report in reports]
 
        
  
@@ -93,8 +111,8 @@ def zipfolder(foldername, target_dir):
 
 @app.route('/exe_download')
 def exe_download():
-    filename = 'src\mps-generator-offline'
-    zipfolder(filename, 'src\offline_builds')
+    filename = 'src/mps-generator-offline'
+    zipfolder(filename, 'src/offline_builds')
     return send_file('mps-generator-offline.zip')
 
 
