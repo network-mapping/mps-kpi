@@ -131,4 +131,4 @@ def update_config():
 
   
 if __name__ == '__main__':
-    app.run(port=os.getenv('PORT'), host=os.getenv('HOST'))
+    app.run(port=os.getenv('PORT'), host=os.getenv('HOST'), debug=True)
