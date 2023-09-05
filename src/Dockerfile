@@ -12,7 +12,7 @@ RUN pip install -r requirements.txt
 
 # copy every content from the local file to the image
 COPY . /app
-RUN mkdir /app/outputs
+RUN mkdir -p /app/outputs
 
 # configure the container to run in an executed manner
 ENTRYPOINT [ "python" ]
