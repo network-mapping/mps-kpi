@@ -111,8 +111,8 @@ def zipfolder(foldername, target_dir):
 
 @app.route('/exe_download')
 def exe_download():
-    filename = 'mps-generator-offline'
-    zipfolder(join('src',filename), 'src/offline_builds')
+    filename = 'src/mps-generator-offline'
+    zipfolder(filename, 'src/offline_builds')
     return send_file('mps-generator-offline.zip')
 
 
