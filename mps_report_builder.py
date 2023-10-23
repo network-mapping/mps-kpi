@@ -130,7 +130,7 @@ class MPSReporter(object):
         df = pd.read_excel(path, header=None)
         report = str(df.iloc[1, 0]).lower()
 
-        return report == PROFIT_AND_LOSS_TITLE
+        return PROFIT_AND_LOSS_TITLE in report
 
     # check all the project cost columns are mapped
     def get_mps_project_categories(self, df):
@@ -302,9 +302,13 @@ class MPSReporter(object):
             else:
                 print(f'WARNING: Ignoring "{report}", format does not match profit and loss report.')
 
-        df = self.merge_company_mps_reports(mps_reports)
-        fname = os.path.join(out_folder, out_fname)
-        df.to_csv(fname)
+        if not mps_reports:
+            print(f'No profit and loss reports found of the expected format.')
+            fname = None
+        else:
+            df = self.merge_company_mps_reports(mps_reports)
+            fname = os.path.join(out_folder, out_fname)
+            df.to_csv(fname)
 
         return fname
 

@@ -8,14 +8,17 @@ exchange_rates:
       2023:
         June: 0.531971  # conversion to GPB
         July: 0.53166  # conversion to GPB
+        August: 0.523314
     CAD to GBP:
       2023:
         June: 0.592838  # conversion to GPB
         July: 0.59598  # conversion to GPB
+        August: 0.587786
     USD to GBP:
       2023:
         June: 0.869943  # conversion to GPB
         July: 0.791703  # conversion to GPB
+        August: 0.776337
     
 # mps to finance cost mappings - finance categories must be a list
 # mps to finance cost mappings
@@ -40,6 +43,7 @@ mps_category_mapping:
   'Travel':                                 # MPS category
     - 'car hire'                            # Finance categories
     - 'travel'
+    - 'mileage'
   'Other':                                  # MPS category
     - 'staff entertainment'                 # Finance categories
     - 'bank charges'

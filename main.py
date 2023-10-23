@@ -36,6 +36,6 @@ if __name__ == '__main__':
     else:
         report_name = f'mps_report.{datetime.today().strftime("%Y.%m.%d")}.csv'
         fname = mps_report_builder.get_mps_report(report_paths, clargs.output_path, out_fname=report_name)
-        print(f'Written {fname}.')
+        print(f'Written {fname}.') if fname else None
 
     print(f'Done.')
